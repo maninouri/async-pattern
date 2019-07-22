@@ -1,0 +1,15 @@
+Resources:
+  # Create databse table for polling workers responses asynchronously
+  AsyncDynamoDbTable:
+    Type: AWS::DynamoDB::Table
+    # Prevent accidential or automatic deletion
+    DeletionPolicy: Retain
+    Properties:
+      TableName: ${self:custom.tableName}
+      AttributeDefinitions:
+        - AttributeName: requestId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: requestId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST

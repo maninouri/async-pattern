@@ -1,0 +1,43 @@
+dispatch-function:
+  handler: functions/dispatch-function.handler
+  description: Dipatches incoming APIGateway requests to calculate topic and write in DynamoDB
+  reservedConcurrency: 5
+  events:
+    - http:
+        path: inbound
+        method: post
+        cors: true
+        private: true
+
+response-function:
+  handler: functions/response-function.handler
+  description: Reads the database for results based on provided requestId
+  reservedConcurrency: 5
+  events:
+    - http:
+        path: /response/{requestId}
+        method: get
+        cors: true
+        private: false
+
+divide-function:
+  handler: functions/divide-function.handler
+  description: Performs division and updates the results in the DynamoDB
+  reservedConcurrency: 5
+  events:
+    - sqs:
+        arn: !GetAtt
+          - divideQueue
+          - Arn
+        batchSize: 1
+
+multiply-function:
+  handler: functions/multiply-function.handler
+  description: Performs multiply and updates the results in the DynamoDB
+  reservedConcurrency: 5
+  events:
+    - sqs:
+        arn: !GetAtt
+          - multiplyQueue
+          - Arn
+        batchSize: 1

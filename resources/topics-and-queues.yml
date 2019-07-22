@@ -1,0 +1,108 @@
+Resources:
+  # Create fan out SNS topic of calculate
+  calculateTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: ${self:service}-${self:provider.stage}-calculate-sns-topic
+
+  # Create divide SQS queue
+  divideQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:service}-${self:provider.stage}-divide-sqs-queue
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt
+          - processDeadLetterQueue
+          - Arn
+        maxReceiveCount: 3
+
+  # Create multiply SQS queue
+  multiplyQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:service}-${self:provider.stage}-multiply-sqs-queue
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt
+          - processDeadLetterQueue
+          - Arn
+        maxReceiveCount: 3
+
+  # Create Dead Letter Queue for unrecoverable errors in processing
+  processDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:service}-${self:provider.stage}-process-dead-letter-queue
+
+  # Create Dead Letter Queue for unrecoverable errors in dipatching
+  dipatchDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:service}-${self:provider.stage}-dipatch-dead-letter-queue
+
+  # Create our queue policy for the divideQueue
+  snsToDivideQueueSqsPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "allow-sns-messages"
+            Effect: Allow
+            Principal: "*"
+            Resource: !GetAtt
+              - divideQueue
+              - Arn
+            Action: "SQS:SendMessage"
+            Condition:
+              ArnEquals:
+                "aws:SourceArn": !Ref calculateTopic
+      Queues:
+        - Ref: divideQueue
+
+  # Create our queue policy for the multiplyQueue
+  snsToMultiplyQueueSqsPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "allow-sns-messages"
+            Effect: Allow
+            Principal: "*"
+            Resource: !GetAtt
+              - multiplyQueue
+              - Arn
+            Action: "SQS:SendMessage"
+            Condition:
+              ArnEquals:
+                "aws:SourceArn": !Ref calculateTopic
+      Queues:
+        - Ref: multiplyQueue
+
+  # Create the subscription to the divideQueue
+  divideQueueSubscription:
+    Type: 'AWS::SNS::Subscription'
+    Properties:
+      TopicArn: !Ref calculateTopic
+      Endpoint: !GetAtt
+        - divideQueue
+        - Arn
+      Protocol: sqs
+      RawMessageDelivery: 'true'
+      # FilterPolicy:
+      #   operation:
+      #     - divide
+
+  # Create the subscription to the multiplyQueue
+  multiplyQueueSubscription:
+    Type: 'AWS::SNS::Subscription'
+    Properties:
+      TopicArn: !Ref calculateTopic
+      Endpoint: !GetAtt
+        - multiplyQueue
+        - Arn
+      Protocol: sqs
+      RawMessageDelivery: 'true'
+      # FilterPolicy:
+      #   operation:
+      #     - multiply
