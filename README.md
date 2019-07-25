@@ -49,6 +49,7 @@ curl "https://nodejs.org/dist/latest/node-${VERSION:-$(wget -qO  https://nodejs.
 
 #### Install the following packages:
 ```
+  npm install -g serverless
   npm install npm@latest -g
   npm install serverless-pseudo-parameters
 ```
@@ -82,6 +83,7 @@ Update the region, accountId, service name, env, topic name, and ARN before exec
 ```
 aws sns set-subscription-attributes --region {$region} --subscription-arn arn:aws:sns:{$region}:{$accountId}:{$serviceName}-{$env}-calculate-sns-topic:{$topicArn} --attribute-name FilterPolicy --attribute-value '{"operation": ["multiplication"]}'
 aws sns set-subscription-attributes --region us-east-1 --subscription-arn arn:aws:sns:us-east-1:361066465741:async-invocation-dev-calculate-sns-topic:ffa6c9bf-af67-4564-951e-6fcc47044f35 --attribute-name FilterPolicy --attribute-value '{"operation": ["multiplication"]}'
+
 aws sns set-subscription-attributes --region {$region} --subscription-arn arn:aws:sns:{$region}:{$accountId}:{$serviceName}-{$env}-calculate-sns-topic:{$topicArn} --attribute-name FilterPolicy --attribute-value '{"operation": ["division"]}'
 aws sns set-subscription-attributes --region us-east-1 --subscription-arn arn:aws:sns:us-east-1:361066465741:async-invocation-dev-calculate-sns-topic:ffa6c9bf-af67-4564-951e-6fcc47044f35 --attribute-name FilterPolicy --attribute-value '{"operation": ["division"]}'
 ```
