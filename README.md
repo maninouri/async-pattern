@@ -1,4 +1,4 @@
-<img src="https://www.dropbox.com/s/bzks0d314giwg70/Decoupled%20Invocation.png>
+![Async Distributed Queue / Fan Out Pattern](/Distributed Queue / Fan Out Pattern.png)
 
 # Asynchronous Decoupled Invocation Pattern
 ### Design considerations and Priorities:
